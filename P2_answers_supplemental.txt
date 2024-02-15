@@ -1,0 +1,24 @@
+Zane Lesley
+Cameron Campbell
+
+QS1.1: Explain the implementation of ReflexAgent in multiAgents.py and how you improved it.
+A1.1: 
+
+QS1.2: What is your value function and why do you think this estimation makes sense?
+A1.2: 
+
+QS2.1: Explain your algorithm. Why do you think it is working?
+A2.1: 
+
+QS3.1: The AlphaBetaAgent minimax values should be identical to the MinimaxAgent minimax values.  Explain why.
+A3.1: 
+
+QS3.2: explain your strategy for breaking a tie.
+A3.2: 
+
+QS4.1: Explain your Expectimax algorithm.
+A4.1: 
+
+QS5.1: explain your new evaluation function, why do you think this new evaluation function is better compared to the previous one?
+A5.1: 
+

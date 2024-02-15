@@ -75,6 +75,18 @@ class ReflexAgent(Agent):
         newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
 
         "*** YOUR CODE HERE ***"
+        from functools import partial
+        score = 0
+        remainingFood = newFood.asList()
+        manPart = partial(manhattanDistance, newPos)
+        ghostDistances = [manPart(ghost.configuration.pos) for ghost in newGhostStates]
+        for item in ghostDistances:
+            if item <= 1:
+                return 0
+        score -= (min(ghostDistances)*0.5 if min(ghostDistances) < newScaredTimes.index(min(ghostDistances))
+                    else min(ghostDistances))
+        closestFood = 9999999
+
         return successorGameState.getScore()
 
 def scoreEvaluationFunction(currentGameState: GameState):

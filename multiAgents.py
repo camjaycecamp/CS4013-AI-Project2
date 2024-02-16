@@ -77,7 +77,6 @@ class ReflexAgent(Agent):
         "*** YOUR CODE HERE ***"
         # import partial functionality for easy function shortcutting and reuse
         from functools import partial
-        
         score = 0
         # derive list from exisiting food
         remainingFood = newFood.asList()
@@ -166,7 +165,67 @@ class MinimaxAgent(MultiAgentSearchAgent):
         Returns whether or not the game state is a losing state
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        # initialize the values representing the best possible score and action
+        optimalScore = -9999999
+        optimalAction = None
+        """ 
+        iterate through all legal actions for Pacman, 
+        update the optimal score and its associated action 
+        when a better one arises. use minimax to evaluate 
+        scores based on the possible states of both Pacman
+        and the ghosts up to a certain depth 
+        """
+        for action in gameState.getLegalActions(0): # index 0 == Pacman
+            successor = gameState.generateSuccessor(0, action)
+            score = self.minimax(successor, self.depth, 1)
+            if score > optimalScore:
+                optimalScore = score
+                optimalAction = action
+        return optimalAction
+        # util.raiseNotDefined()
+    
+    # minimax function, takes turns with Pacman (max, index == 0) and ghosts (min, index > 0)
+    # also returns terminal states when relevant
+    def minimax(self, state, depth, index):
+        return (self.evaluationFunction(state) if state.isWin() or state.isLose() or depth == 0
+                else self.minifyMaxify(state, depth, index, False) if index == 0
+                else self.minifyMaxify(state, depth, index, True))
+
+    # finds maximum or minimum score legal actions for Pacman or a ghost, respectively
+    def minifyMaxify(self, state, depth, index, isGhost):
+        # initialize value for respective agent
+        value = -9999999 if not isGhost else 9999999
+        # find all legal actions the agent can take this turn
+        actions = state.getLegalActions(index)
+        # return terminal if no legal actions
+        if not actions: return self.evaluationFunction(state)
+        # iterate through legal actions and find best respective (min or max) value for agent
+        for action in actions:
+            # get next successor state
+            s = state.generateSuccessor(index, action)
+            """
+            Nested ternary operator expressions:
+            
+            "if the current agent's a ghost, find its minimal score and then either
+            iterate to Pacman (index 0) or the next ghost (index+1) depending on whether
+            the current agent is the last ghost or not. otherwise, if the agent is not 
+            a ghost (and thus Pacman), find its maximum score and iterate to the first 
+            ghost (index 1)."
+
+            the first and second lines represent the internal ternary operator, which 
+            itself is the first conditional value of the ternary operator reliant on
+            said condition being true
+
+            the third line represents the the external ternary operator's second
+            conditional value, and runs for all other cases than when the first value's
+            condition is true
+            """
+            value = ((min(value, self.minimax(s, depth-1, 0)) if index == state.getNumAgents()-1
+                        else min(value, self.minimax(s, depth, index+1))) if isGhost
+                    else max(value, self.minimax(s, depth, 1)))
+        return value
+            
+
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """

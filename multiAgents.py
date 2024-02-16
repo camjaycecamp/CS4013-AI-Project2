@@ -193,13 +193,13 @@ class MinimaxAgent(MultiAgentSearchAgent):
 
     # finds maximum or minimum score legal actions for Pacman or a ghost, respectively
     def minifyMaxify(self, state, depth, index, isGhost):
-        # initialize value for respective agent
-        value = -9999999 if not isGhost else 9999999
+        # initialize score for respective agent
+        score = -9999999 if not isGhost else 9999999
         # find all legal actions the agent can take this turn
         actions = state.getLegalActions(index)
         # return terminal if no legal actions
         if not actions: return self.evaluationFunction(state)
-        # iterate through legal actions and find best respective (min or max) value for agent
+        # iterate through legal actions and find best respective (min or max) score for agent
         for action in actions:
             # get next successor state
             s = state.generateSuccessor(index, action)
@@ -220,10 +220,10 @@ class MinimaxAgent(MultiAgentSearchAgent):
             conditional value, and runs for all other cases than when the first value's
             condition is true
             """
-            value = ((min(value, self.minimax(s, depth-1, 0)) if index == state.getNumAgents()-1
-                        else min(value, self.minimax(s, depth, index+1))) if isGhost
-                    else max(value, self.minimax(s, depth, 1)))
-        return value
+            score = ((min(score, self.minimax(s, depth-1, 0)) if index == state.getNumAgents()-1
+                        else min(score, self.minimax(s, depth, index+1))) if isGhost
+                    else max(score, self.minimax(s, depth, 1)))
+        return score
             
 
 

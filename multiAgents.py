@@ -243,16 +243,72 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
     """
       Your expectimax agent (question 4)
     """
-
+    
+    """ 
+    getAction remains virtually the same as Q2 other than some minor syntax 
+    changes made to increase concision and reduce type and scope errors
+    """
     def getAction(self, gameState: GameState):
+        # initialize the values representing the best possible score and action
+        optimalScore = -9999999
+        optimalAction = None
+        """ 
+        iterate through all legal actions for Pacman, 
+        update the optimal score and its associated action 
+        when a better one arises. use expectimax to evaluate 
+        scores based on the possible states of both Pacman
+        and the ghosts up to a certain depth 
         """
-        Returns the expectimax action using self.depth and self.evaluationFunction
+        for action in gameState.getLegalActions(0): # index 0 == Pacman
+            successor = gameState.generateSuccessor(0, action)
+            score = self.expectimax(successor, self.depth, 1)[0] # reduce scope to score, minimizing expanded state errors
+            if score > optimalScore:
+                optimalScore, optimalAction = score, action # shortcut syntax
+        return optimalAction
+        # util.raiseNotDefined()
+    
+    """ 
+    expectimax function forked from minimax, remaining mostly the same except for its ternary operator
+    being reduced to two conditional values due to changes in expectifyMaxify
+    
+    the terminal state was also adjusted to maintain consistency with the action tuple return type
+    """
+    def expectimax(self, state, depth, index):
+        return ((self.evaluationFunction(state), None) if state.isWin() or state.isLose() or depth == 0
+                else self.expectifyMaxify(state, depth, index))
 
-        All ghosts should be modeled as choosing uniformly at random from their
-        legal moves.
-        """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+    """ 
+    expectifyMaxify is an extensively reworked minifyMaxify fork, ditching the isGhost logic
+    in favor of further homogenizing the logic between Pacman and the ghosts
+    
+    scores are now tracked as a list and evaluated respective to agent type after the for loop, 
+    and the nested ternary operator was swapped out for a modulo index variable and ternary
+    operator depth variable. scores themselves are appended to the score list and all agents
+    go through expectimax in-loop
+    
+    once the loop is finished, Pacman is assigned the same max score and ghosts are assigned an
+    average of the scores a la expectimax
+    """
+    # finds maximum or expected score out of all legal actions for Pacman or a ghost, respectively
+    def expectifyMaxify(self, state, depth, index):
+        # find all legal actions the agent can take this turn
+        actions = state.getLegalActions(index)
+        # return terminal with action tuple return type if no legal actions
+        if not actions: return self.evaluationFunction(state), None
+        
+        # iterate through legal actions and find best respective (exp or max) score for agent
+        scores = []
+        for action in actions:
+            # get next successor state
+            s = state.generateSuccessor(index, action)
+            nextIndex = (index + 1) % state.getNumAgents()
+            nextDepth = depth - 1 if nextIndex == 0 else depth  # decrease depth on full cycle through agents
+            # call expectimax recursively for next agent
+            score = self.expectimax(s, nextDepth, nextIndex)[0]
+            scores.append(score)
+        # optimize score for respective agent type (Pacman at index 0 or ghosts otherwise)
+        bestScore = max(scores) if index == 0 else sum(scores)/len(scores)
+        return bestScore, None  # return with action tuple return type for consistency
 
 def betterEvaluationFunction(currentGameState: GameState):
     """

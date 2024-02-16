@@ -2,10 +2,10 @@ Zane Lesley
 Cameron Campbell
 
 QS1.1: Explain the implementation of ReflexAgent in multiAgents.py and how you improved it.
-A1.1: 
+A1.1: On its own, ReflexAgent simply chose the legal move out of the ones available with the best score using the vanilla evaluationFunction — which is a glorified call to the successorGameState.getScore() function. If there were multiple moves with the same score, they were chosen from randomly. With my improvements, the evaluationFunction now finds the closest food pellet and ghost for each successor state, derives positive and negative scores with incentive weights from them, and uses the sum of those values as the score returned by the function. There are also additional incentives that influence the score, such as any state where Pacman collides with a ghost being given the worst possible score and any state where Pacman passes on a move being heftily penalized.
 
 QS1.2: What is your value function and why do you think this estimation makes sense?
-A1.2: 
+A1.2: My value function is V(state,action) = (successor state score) + (consumption incentive) + (ghost distance incentive) + (closest pellet incentive) + (passed move incentive). Successor state score is the base score taken from the successor state, a la the vanilla evaluationFunction. Consumption incentive adds 30 to the score on the condition that the move consumes a pellet. Ghost distance incentive adds the closest ghost's distance to the score or alternatively subtracts 9999999 from it if the state would result in Pacman colliding with a ghost. Closest pellet incentive subtracts the distance of the closest food pellet from the score. Finally, passed move incentive subtracts 750 from the score of states where no move is taken and adds 5 to states where a move is taken. This value function works well for Pacman, as it prioritizes stay away from ghosts, getting close to and consuming pellets, and staying on the move no matter what.
 
 QS2.1: Explain your algorithm. Why do you think it is working?
 A2.1: 

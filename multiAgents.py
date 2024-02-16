@@ -75,19 +75,37 @@ class ReflexAgent(Agent):
         newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
 
         "*** YOUR CODE HERE ***"
+        # import partial functionality for easy function shortcutting and reuse
         from functools import partial
+        
         score = 0
+        # derive list from exisiting food
         remainingFood = newFood.asList()
+        # create a partial of the manhattanDistance function, taking newPos as input
         manPart = partial(manhattanDistance, newPos)
-        ghostDistances = [manPart(ghost.configuration.pos) for ghost in newGhostStates]
+        
+        # create a list comprehension of the manhattan partial applied to each ghost state's distance
+        ghostDistances = [manPart(ghost.getPosition()) for ghost in newGhostStates]
+        # if a move results in colliding with a ghost and thus dying, this is the worst possible move
         for item in ghostDistances:
             if item <= 1:
-                return 0
-        score -= (min(ghostDistances)*0.5 if min(ghostDistances) < newScaredTimes.index(min(ghostDistances))
-                    else min(ghostDistances))
-        closestFood = 9999999
-
-        return successorGameState.getScore()
+                return -9999999
+        # add the closest ghost's distance to the score; the farther away, the better
+        score += min(ghostDistances)
+        
+        # like ghosts, create a list comprehension of the manhattan partial applied to the position of the remaining food pellets
+        foodDistances = [manPart(pellet) for pellet in remainingFood]
+        # reduce food distance to 0 if none remains, otherwise the closest pellet is chosen
+        closestFoodDistance = 0 if len(remainingFood) == 0 else min(foodDistances)
+        # dramatically disincentivize passing on a move, slightly reward moving 
+        score -= 750 if action == 'STOP' else -5
+        # incentivize moves that consume pellets
+        score += 30 if currentGameState.getNumFood() > successorGameState.getNumFood() else 0
+        # add the base successor state score and the negative of the closest food pellet to the score
+        # the farther the closest food pellet, the worse the score
+        score += -closestFoodDistance + successorGameState.getScore()
+        #print(score)
+        return score
 
 def scoreEvaluationFunction(currentGameState: GameState):
     """

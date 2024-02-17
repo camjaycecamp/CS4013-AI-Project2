@@ -315,10 +315,68 @@ def betterEvaluationFunction(currentGameState: GameState):
     Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
     evaluation function (question 5).
 
-    DESCRIPTION: <write something here so we know what you did>
+    DESCRIPTION: 
+    This function is a fundamental redesign of the evaluationFunction in Q1 with a better understanding of
+    and emphasis on using incentives to encourage or discourage certain behaviors. The function calculates
+    a variety of positive and negative incentives that impact the final score of any given move. 
+    
+    Being far away from food is negatively incentivized, discouraging Pacman from staying in spaces where no
+    food exists.
+    
+    Ghosts inherently apply a negative incentive. The weight of this incentive is increased by distance from
+    scared ghosts, encouraging aggression against them. It is also decreased by distance from active ghosts,
+    encouraging defensive behavior.
+    
+    Capsules apply a negative incentive that is gradually reduced to 0 as they're consumed, encouraging Pacman
+    to take advantage of them as early as possible to get ahead.
+    
+    The number of food pellets remaining grants a ramping positive incentive as it decreases, encouraging Pacman
+    to prioritize consuming food pellets.
+    
+    Finally, reducing the remaining food pellets to less than five applies a massive positive incentive, encouraging
+    Pacman to finish strong with a reward.
+    
+    This function improves on the old evaluation function massively by reworking existing incentives and introducing
+    incentives all with a careful central balance, ensuring that Pacman more advantageously prioritizes old behaviors
+    while taking into account new behaviors that are both beneficial and harmful to him.
     """
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    # immediately return incentivized score if game ending states are reached
+    if currentGameState.isWin(): return 9999999 # max positive incentive for winning states
+    elif currentGameState.isLose(): return -9999999 # max negative incentive for losing states
+    
+    # initialize variables
+    score = currentGameState.getScore() # initialize score
+    pacmanPosition = currentGameState.getPacmanPosition() # initialize pacman position
+    foodList = currentGameState.getFood().asList() # get list of remaining food
+    remainingFood = len(foodList) # quantify remaining food
+    foodDistanceIncentive = 0 # create positive incentive based on distance from nearest food pellet
+    ghostIncentive = 0 # create negative incentive based on distance from nearest ghost
+    ghostStates = currentGameState.getGhostStates() # get states of all ghosts
+    scaredTimes = [ghost.scaredTimer for ghost in ghostStates] # get times that all ghosts will be scared for
+    
+    # adjust food incentive using manhattan distance
+    foodDistances = [manhattanDistance(pacmanPosition, food) for food in foodList] # find all manhattan distances in foodList with list comprehension
+    nearestFoodDistance = min(foodDistances) # find nearest food pellet
+    foodDistanceIncentive = 50 / nearestFoodDistance  # divide a positive incentive by food distance; the closer the better
+
+    # iterate through ghost states and determine incentives for scared and active ghosts
+    for i, ghost in enumerate(ghostStates):
+        distance = manhattanDistance(pacmanPosition, ghost.getPosition())
+        if scaredTimes[i] > 0:
+            # increase negative ghost incentive by a negative incentive divided by distance; the closer the better
+            if distance > 0: ghostIncentive += 200 / distance # encourage aggression against scared ghosts
+        # decrease negative ghost incentive by a positive incentive divided by distance; the farther the better
+        elif distance <= 2: ghostIncentive -= 500 / (distance + 0.1) # discourages aggression against active ghosts
+
+    # append some miscellaneous incentives
+    capsuleIncentive = -30 * len(currentGameState.getCapsules()) # negative incentive for leaving capsules uneaten
+    remainingFoodIncentive = 150 * (1 / (1 + remainingFood)) # positive incentive for decreasing remaining food
+    # append special incentive to encourage aggressive late-game strategy
+    if remainingFood < 5: score += 500 # positive incentive to finish up last few pellets
+
+    # add up all incentives into a final score and return it
+    score += foodDistanceIncentive + ghostIncentive + capsuleIncentive + remainingFoodIncentive
+    return score
 
 # Abbreviation
 better = betterEvaluationFunction
